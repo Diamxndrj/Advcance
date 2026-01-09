@@ -19,9 +19,7 @@ typedef struct {
 
 unsigned int hash_function(const char *key, int size) {
     unsigned int hash = 0;
-    for (int i = 0; key[i] != '\0'; i++) {
-        hash = (hash * 31) + key[i];
-    }
+    for (int i = 0; key[i] != '\0'; i++) hash = (hash * 31) + key[i];
     return hash % size;
 }
 
@@ -67,12 +65,12 @@ void search(HashTable *ht, char *id) {
     Node *curr = ht->buckets[index];
     while (curr != NULL) {
         if (strcmp(curr->id, id) == 0) {
-            printf("\nFound: ID : %s| Name : %s| GPA : %.2f\n", curr->id, curr->name, curr->gpa);
+            printf("\nFound: ID %s, Name: %s, GPA: %.2f\n", curr->id, curr->name, curr->gpa);
             return;
         }
         curr = curr->next;
     }
-    printf("\nError : ID %s not found.\n", id);
+    printf("\nError: ID %s not found.\n", id);
 }
 
 void delete_node(HashTable *ht, char *id) {
@@ -85,28 +83,49 @@ void delete_node(HashTable *ht, char *id) {
             else prev->next = curr->next;
             free(curr);
             ht->count--;
-            printf("\nDeleted : Student ID %s\n", id);
+            printf("\nDeleted ID %s\n", id);
             return;
         }
         prev = curr;
         curr = curr->next;
     }
-    printf("\nError: Cannot find ID %s to delete.\n", id);
+    printf("\nError: ID %s not found.\n", id);
+}
+
+void show_stats(HashTable *ht) {
+    if (ht->count == 0) {
+        printf("\nNo data to calculate statistics.\n");
+        return;
+    }
+    float sum = 0, max = -1, min = 5;
+    for (int i = 0; i < ht->size; i++) {
+        Node *curr = ht->buckets[i];
+        while (curr) {
+            sum += curr->gpa;
+            if (curr->gpa > max) max = curr->gpa;
+            if (curr->gpa < min) min = curr->gpa;
+            curr = curr->next;
+        }
+    }
+    printf("\n--- Grade Statistics ---");
+    printf("\nTotal Students: %d", ht->count);
+    printf("\nAverage GPA: %.2f", sum / ht->count);
+    printf("\nHighest GPA: %.2f", max);
+    printf("\nLowest GPA: %.2f\n", min);
 }
 
 void display(HashTable *ht) {
-    printf("\n--- Student List (Total : %d) ---\n", ht->count);
+    printf("\n--- Student List (%d) ---\n", ht->count);
     int found = 0, counter = 1;
     for (int i = 0; i < ht->size; i++) {
         Node *curr = ht->buckets[i];
         while (curr) {
-            printf("%d. ID : %s | Name : %s | GPA : %.2f\n", counter++, curr->id, curr->name, curr->gpa);
+            printf("%d. ID: %s | Name: %s | GPA: %.2f\n", counter++, curr->id, curr->name, curr->gpa);
             curr = curr->next;
             found = 1;
         }
     }
-    if (!found) printf("No records available.\n");
-    printf("------------------------------\n");
+    if (!found) printf("No records found.\n");
 }
 
 int main() {
@@ -115,23 +134,25 @@ int main() {
     char id[20], name[50];
     float gpa;
     while(1) {
-        printf("\n=== Student Management System ===\n");
-        printf("1. Add Student\n2. Search Student\n3. Delete Student\n4. Show All\n5. Exit Program\nSelect: ");
+        printf("\n=== Student System ===\n");
+        printf("1. Add\n2. Search\n3. Delete\n4. Show All\n5. Statistics\n6. Exit\nSelect: ");
         if (scanf("%d", &choice) != 1) break;
         if (choice == 1) {
-            printf("ID : "); scanf("%s", id);
-            printf("Name : "); scanf("%s", name);
-            printf("GPA : "); scanf("%f", &gpa);
+            printf("ID: "); scanf("%s", id);
+            printf("Name: "); scanf("%s", name);
+            printf("GPA: "); scanf("%f", &gpa);
             insert(ht, id, name, gpa);
         } else if (choice == 2) {
-            printf("Enter ID to Search : "); scanf("%s", id);
+            printf("Search ID: "); scanf("%s", id);
             search(ht, id);
         } else if (choice == 3) {
-            printf("Enter ID to Delete: "); scanf("%s", id);
+            printf("Delete ID: "); scanf("%s", id);
             delete_node(ht, id);
         } else if (choice == 4) {
             display(ht);
         } else if (choice == 5) {
+            show_stats(ht);
+        } else if (choice == 6) {
             break;
         }
     }
